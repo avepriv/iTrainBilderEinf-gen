@@ -125,7 +125,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 407);
+            this.ClientSize = new System.Drawing.Size(512, 407);
             this.Controls.Add(this.StartBtn);
             this.Controls.Add(this.statusLbl);
             this.Controls.Add(this.ImgPathBtn);
