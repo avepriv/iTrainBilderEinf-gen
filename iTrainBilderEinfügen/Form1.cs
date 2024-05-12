@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.IO.Compression;
 using System.Xml;
-
+using InitListsNameSpace;
 
 namespace iTrainBilderEinfügen
 {
@@ -24,11 +24,39 @@ namespace iTrainBilderEinfügen
         Dictionary<int, String> images = new Dictionary<int, string>();
         String tdcName;
         Logger logger = new Logger();
+        InitLists initList = null;
+        
+
+        String listsName;
+        const String layoutdatei = "Layout-Datei";
+        const String imagespath = "Bilder-Pfad";
+        const String mitglieder = "Mitglieder";
+        const String hersteller = "Hersteller";
         #endregion Variables
 
         public Form1()
         {
             InitializeComponent();
+        }
+
+        private void Form1_Load(Object sender, EventArgs e)
+        {
+            listsName = basispfad + "\\Mitglieder_Hersteller.txt";
+            // read the member- and manufacturer list
+            if(!ReadMemberAndManuLists()) {
+                Cursor = Cursors.Default;
+                logger.show();
+                return;
+            }
+        }
+
+        private void Form1_FormClosing(Object sender, FormClosingEventArgs e)
+        {
+            // update the paths
+            initList.set(layoutdatei, iTrainLayoutTB.Text, true);
+            initList.set(imagespath, imageFldrTB.Text, true);
+            // write the init-list (paths, members, and manufacturers
+            initList.write();
         }
 
         private void layoutBtn_Click(Object sender, EventArgs e)
@@ -74,13 +102,6 @@ namespace iTrainBilderEinfügen
 
             if(!loadImageList()) {
                 ErrMsg("Fehler beim Lesen der Bilder - Siehe Bericht", "Fehler bei Bildern");
-                Cursor = Cursors.Default;
-                logger.show();
-                return;
-            }
-
-            // read the member- and manufacturer list
-            if(!ReadMemberAndManuLists()) {
                 Cursor = Cursors.Default;
                 logger.show();
                 return;
@@ -187,39 +208,26 @@ namespace iTrainBilderEinfügen
         /// <returns></returns>
         private bool ReadMemberAndManuLists()
         {
-            String listsName = basispfad + "\\Mitglieder_Hersteller.txt";
             if(!File.Exists(listsName)) {
                 ErrMsg($"Mitglieder- und Hersteller Listen ({listsName}) konnten nicht gefunden werden!", 
                         "Datei nicht gefunden");
                 return false;
             }
+            initList = new InitLists(listsName);
             memberNums.Clear();
             manufacturers.Clear();
 
-            String mode = "wait";
-            using(StreamReader sr = new StreamReader(listsName)) {
-                while(!sr.EndOfStream) {
-                    String line = sr.ReadLine().Trim().ToLower();
-                    if(line == "") {
-                        continue;
-                    }
-                    if(line == "mitglieder:") {
-                        mode = "mitglieder";
-                    } else if (line == "hersteller:") {
-                        mode = "hersteller";
-                    } else if (mode == "mitglieder") {
-                        int num = getInt(line, -1);
-                        if (num != -1 && !memberNums.Contains(num)) {
-                            memberNums.Add(num);
-                        }
-                    } else if (mode == "hersteller") {
-                        line = line.Split(' ')[0].Trim();
-                        if(!manufacturers.Contains(line)) {
-                            manufacturers.Add(line);
-                        }
-                    }
-                }
-            }
+            // read the layout file, if available
+            iTrainLayoutTB.Text = initList.getFirst(layoutdatei, iTrainLayoutTB.Text);
+
+            // read the image folder path , if available
+            imageFldrTB.Text = initList.getFirst(imagespath, imageFldrTB.Text);
+
+            // read the members
+            memberNums = initList.getUniqueNumList(mitglieder);
+
+            // read the manufacturers
+            manufacturers = initList.getUniqueList_lc(hersteller);
             return true;
         }
 
@@ -556,6 +564,7 @@ namespace iTrainBilderEinfügen
         }
 
         #endregion helpers
+
     }
 
     public class Logger
