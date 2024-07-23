@@ -161,8 +161,9 @@ namespace InitListsNameSpace
             List<String> res = new List<string>();
             if(entries.ContainsKey(section.ToLower()))
                 foreach(String entry in entries[section.ToLower()]) {
-                    if(!res.Contains(entry)) {
-                        res.Add(strip_comment(entry, commentChar));
+                    String candidate = strip_comment(entry, commentChar);
+                    if(!res.Contains(candidate)) {
+                        res.Add(candidate);
                     }
                 }
             return res;
@@ -185,8 +186,9 @@ namespace InitListsNameSpace
             List<String> res = new List<string>();
             if(entries.ContainsKey(section.ToLower()))
                 foreach(String entry in entries[section.ToLower()]) {
-                    if(!res.Contains(entry.ToLower())) {
-                        res.Add(strip_comment(entry.ToLower(), commentChar));
+                    String candidate = strip_comment(entry.ToLower(), commentChar);
+                    if(!res.Contains(candidate)) {
+                        res.Add(candidate);
                     }
                 }
             return res;

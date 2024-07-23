@@ -27,7 +27,7 @@ namespace iTrainBilderEinfügen
         InitLists initList = null;
         
 
-        String listsName;
+        public static String listsName;
         const String layoutdatei = "Layout-Datei";
         const String imagespath = "Bilder-Pfad";
         const String mitglieder = "Mitglieder";
@@ -150,6 +150,7 @@ namespace iTrainBilderEinfügen
                 saveNewArchive(xDoc, iTrainLayoutFile, tdcName);
             }
 
+            logger.log(null, ""); //empty line
             logger.log(null, $"{totalLocCntr} Lokomotiven und {totalWagonCntr} Wagons bearbeitet, \r\n" 
                     + $"         davon {adaptedLocCntr} Lokomotiven und {adaptedWagonCntr} Wagons angepasst");
             logger.show();
@@ -227,7 +228,7 @@ namespace iTrainBilderEinfügen
             memberNums = initList.getUniqueNumList(mitglieder);
 
             // read the manufacturers
-            manufacturers = initList.getUniqueList_lc(hersteller);
+            manufacturers = initList.getUniqueList_lc(hersteller, ' ');
             return true;
         }
 
@@ -246,7 +247,7 @@ namespace iTrainBilderEinfügen
             }
             String[] descrParts = descr.Split('-');
             if (descrParts.Length != 4) {
-                logger.error(vehicle, $"Beschreibung enthält nur {descrParts.Length} Teile, 4 erwartet");
+                logger.error(vehicle, $"Beschreibung enthält {descrParts.Length} Teile, 4 erwartet");
                 return -1;
             }
             // check member
@@ -586,6 +587,10 @@ namespace iTrainBilderEinfügen
 
         public void log(XmlNode vehicle, String msg)
         {
+            if(vehicle == null && msg == "") {
+                logTxt.Append("\r\n"); // just add an empty line
+                return;
+            }
             logTxt.Append($"{Form1.getAttr(vehicle, "name", "General")}: {msg}\r\n");
         }
 
@@ -604,6 +609,7 @@ namespace iTrainBilderEinfügen
         public void show()
         {
             win.clear();
+            win.write($"Benutzte Hersteller- und Mitglieder-Datei:\r\n{Form1.listsName}\r\n\r\n");
             win.write("Fehlerprotokoll:\r\n");
             win.write("----------------\r\n");
             if(errorTxt.Length == 0) {
